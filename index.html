@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ToDo App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class', // or 'media'
+        theme: {
+          extend: {
+            colors: {
+              primary: { // Calm Blue (Sky)
+                light: '#0EA5E9', // sky-500
+                DEFAULT: '#0EA5E9', // sky-500
+                dark: '#38BDF8',  // sky-400 (lighter for dark mode accent)
+              },
+              secondary: { // Kept emerald, can be reviewed if clashes
+                light: '#10B981', // emerald-500
+                DEFAULT: '#10B981',
+                dark: '#34D399', // emerald-400
+              },
+              background: { // Lighter, cleaner backgrounds
+                light: '#F8FAFC', // slate-50
+                DEFAULT: '#F8FAFC',
+                dark: '#0F172A',   // slate-900
+              },
+              surface: { // For cards, modals
+                light: '#FFFFFF', // white
+                DEFAULT: '#FFFFFF',
+                dark: '#1E293B',   // slate-800
+              },
+              text_primary: { // Softer text colors
+                light: '#334155', // slate-700
+                DEFAULT: '#334155',
+                dark: '#E2E8F0',   // slate-200
+              },
+              text_secondary: {
+                light: '#64748B', // slate-500
+                DEFAULT: '#64748B',
+                dark: '#94A3B8',   // slate-400
+              },
+              border_color: { // Dedicated border color for consistency
+                light: '#E2E8F0', // slate-200
+                DEFAULT: '#E2E8F0',
+                dark: '#475569',   // slate-600 (adjusted for better visibility on slate-800 surface)
+              },
+              danger: { // Keep as is, standard for errors
+                light: '#EF4444', // red-500
+                DEFAULT: '#EF4444',
+                dark: '#F87171', // red-400
+              }
+            }
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/"
+  }
+}
+</script>
+</head>
+  <body class="bg-background-light dark:bg-background-dark text-text_primary-light dark:text-text_primary-dark transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html><link rel="stylesheet" href="index.css">
+<script src="index.tsx" type="module"></script>

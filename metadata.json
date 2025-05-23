@@ -1,0 +1,6 @@
+{
+  "name": "ToDo",
+  "description": "A clean and modern To-Do List application designed to help users efficiently organize their tasks. Features include task management, priority setting, subtasks, and a light/dark theme selector. UI text is in Brazilian Portuguese.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
