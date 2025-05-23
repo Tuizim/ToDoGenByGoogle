@@ -25,51 +25,7 @@ export interface UseTasksReturn {
   removeExerciseFromSubtask: (taskId: string, subtaskId: string) => void;
 }
 
-const initialTasks: Task[] = [
-  {
-    id: crypto.randomUUID(),
-    title: 'Comprar pão na padaria',
-    description: 'Pão francês e integral.',
-    priority: Priority.Media,
-    isCompleted: false,
-    createdAt: new Date().toISOString(),
-    subtasks: [],
-  },
-  {
-    id: crypto.randomUUID(),
-    title: 'Resolver problema de física',
-    description: 'Capítulo 3, problema 5.',
-    priority: Priority.Alta,
-    isCompleted: false,
-    createdAt: new Date().toISOString(),
-    subtasks: [],
-    exercise: {
-      title: 'Problema da Rampa',
-      statement: 'Um bloco de massa M desliza por uma rampa inclinada de um ângulo θ. Calcule a aceleração do bloco, desconsiderando o atrito.',
-      isCompleted: false,
-    }
-  },
-  {
-    id: crypto.randomUUID(),
-    title: 'Estudar React e Tailwind CSS',
-    description: 'Revisar hooks e utilitários do Tailwind.',
-    priority: Priority.Alta,
-    isCompleted: false,
-    createdAt: new Date().toISOString(),
-    subtasks: [
-      { id: crypto.randomUUID(), title: 'Ler documentação oficial do React', isCompleted: false, createdAt: new Date().toISOString() },
-      { id: crypto.randomUUID(), title: 'Praticar com um projeto pequeno', isCompleted: false, createdAt: new Date().toISOString(), exercise: { title: "Mini-Projeto Hooks", statement: "Criar um contador usando useState e useEffect.", isCompleted: false} },
-    ],
-  },
-   {
-    id: crypto.randomUUID(),
-    title: 'Pagar conta de luz',
-    priority: Priority.Alta,
-    isCompleted: true,
-    createdAt: new Date().toISOString(),
-    subtasks: [],
-  }
-];
+const initialTasks: Task[] = [];
 
 
 export const useTasks = (): UseTasksReturn => {
