@@ -10,9 +10,10 @@ export interface UseTasksReturn {
     title: string, 
     description?: string, 
     priority?: Priority, 
-    exerciseData?: { title: string; statement: string }
+    exerciseData?: { title: string; statement: string },
+    emoji?: string, // Added emoji
   ) => void;
-  editTask: (id: string, updates: Partial<Omit<Task, 'id' | 'subtasks' | 'createdAt' | 'exercise'>> & { exercise?: ExerciseDetails | null }) => void;
+  editTask: (id: string, updates: Partial<Omit<Task, 'id' | 'subtasks' | 'createdAt' | 'exercise'>> & { exercise?: ExerciseDetails | null, emoji?: string }) => void; // Added emoji
   deleteTask: (id: string) => void;
   toggleTaskComplete: (id: string) => void;
   addSubtask: (taskId: string, subtaskTitle: string) => void;
@@ -35,7 +36,8 @@ export const useTasks = (): UseTasksReturn => {
     title: string, 
     description?: string, 
     priority: Priority = Priority.Media,
-    exerciseData?: { title: string; statement: string }
+    exerciseData?: { title: string; statement: string },
+    emoji?: string, // Added emoji
   ) => {
     if (!title.trim()) return;
     const newTask: Task = {
@@ -46,6 +48,7 @@ export const useTasks = (): UseTasksReturn => {
       isCompleted: false,
       createdAt: new Date().toISOString(),
       subtasks: [],
+      emoji, // Added emoji
     };
     if (exerciseData && exerciseData.title.trim() && exerciseData.statement.trim()) {
       newTask.exercise = {
@@ -56,11 +59,11 @@ export const useTasks = (): UseTasksReturn => {
     setTasks(prevTasks => [newTask, ...prevTasks]);
   }, [setTasks]);
 
-  const editTask = useCallback((id: string, updates: Partial<Omit<Task, 'id' | 'subtasks' | 'createdAt' | 'exercise'>> & { exercise?: ExerciseDetails | null }) => {
+  const editTask = useCallback((id: string, updates: Partial<Omit<Task, 'id' | 'subtasks' | 'createdAt' | 'exercise'>> & { exercise?: ExerciseDetails | null, emoji?: string }) => {
     setTasks(prevTasks =>
       prevTasks.map(task => {
         if (task.id === id) {
-          const { exercise, ...otherUpdates } = updates;
+          const { exercise, emoji, ...otherUpdates } = updates; // Destructure emoji
           let updatedExercise = task.exercise;
 
           if (exercise === null) { 
@@ -79,11 +82,10 @@ export const useTasks = (): UseTasksReturn => {
                updatedExercise.isCompleted = finalIsCompleted;
             }
           } else if (exercise === null) {
-            // If exercise removed, task completion doesn't automatically change unless explicitly passed in updates
              finalIsCompleted = typeof updates.isCompleted === 'boolean' ? updates.isCompleted : task.isCompleted;
           }
           
-          return { ...task, ...otherUpdates, exercise: updatedExercise, isCompleted: finalIsCompleted };
+          return { ...task, ...otherUpdates, emoji: emoji !== undefined ? emoji : task.emoji, exercise: updatedExercise, isCompleted: finalIsCompleted }; // Handle emoji update
         }
         return task;
       })
@@ -173,19 +175,16 @@ export const useTasks = (): UseTasksReturn => {
 
                   if (updates.exercise === null) { 
                     updatedExercise = undefined;
-                    // Subtask completion not affected by exercise removal unless exercise was only reason for completion.
-                    // This logic can be complex. For now, keep sub.isCompleted unless exercise was sole driver.
                   } else if (updates.exercise) { 
                     updatedExercise = { 
                       ...(sub.exercise || { title: '', statement: '', isCompleted: false }), 
                       ...updates.exercise 
                     };
-                    // Sync subtask completion with exercise completion if exercise exists and its completion is defined
                     if (typeof updates.exercise.isCompleted === 'boolean') {
                        subtaskIsCompleted = updates.exercise.isCompleted;
                        updatedExercise.isCompleted = subtaskIsCompleted;
                     } else {
-                       updatedExercise.isCompleted = subtaskIsCompleted; // Sync from subtask if not explicitly set on exercise
+                       updatedExercise.isCompleted = subtaskIsCompleted; 
                     }
                   }
                   
@@ -250,7 +249,7 @@ export const useTasks = (): UseTasksReturn => {
                   return {
                     ...sub,
                     exercise: updatedExercise,
-                    isCompleted: newSubtaskCompleted, // Sync subtask completion
+                    isCompleted: newSubtaskCompleted, 
                   };
                 }
                 return sub;
@@ -271,7 +270,7 @@ export const useTasks = (): UseTasksReturn => {
                 if (sub.id === subtaskId) {
                   // eslint-disable-next-line @typescript-eslint/no-unused-vars
                   const { exercise, ...restOfSubtask } = sub;
-                  return restOfSubtask as Subtask; // Cast, exercise is removed
+                  return restOfSubtask as Subtask; 
                 }
                 return sub;
               }),

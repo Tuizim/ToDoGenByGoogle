@@ -22,6 +22,7 @@ export interface Subtask {
 export interface Task {
   id:string;
   title: string;
+  emoji?: string; // Added emoji field
   description?: string;
   priority: Priority;
   isCompleted: boolean;

@@ -1,6 +1,5 @@
 
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Task, Priority, ExerciseDetails, Subtask } from '../types';
 import { PRIORITY_COLORS } from '../constants';
 import TrashIcon from './icons/TrashIcon';
@@ -10,6 +9,8 @@ import SubtaskItem from './SubtaskItem';
 import SubtaskInput from './SubtaskInput';
 import Button from './Button';
 import AcademicCapIcon from './icons/AcademicCapIcon';
+import ChevronDownIcon from './icons/ChevronDownIcon'; // Re-used
+import ChevronUpIcon from './icons/ChevronUpIcon';
 
 interface TaskItemProps {
   task: Task;
@@ -17,7 +18,7 @@ interface TaskItemProps {
   onDelete: (id: string) => void;
   onEdit: (task: Task) => void; 
   onAddSubtask: (taskId: string, subtaskTitle: string) => void;
-  onEditSubtask: (taskId: string, subtask: Subtask) => void; // Changed to pass full subtask for modal
+  onEditSubtask: (taskId: string, subtask: Subtask) => void; 
   onDeleteSubtask: (taskId: string, subtaskId: string) => void;
   onToggleSubtaskComplete: (taskId: string, subtaskId: string) => void;
   onUpdateExercise: (taskId: string, exerciseUpdates: Partial<ExerciseDetails>) => void;
@@ -35,6 +36,8 @@ const TaskItem: React.FC<TaskItemProps> = ({
   onToggleSubtaskComplete,
   onUpdateExercise,
 }) => {
+  const [isSubtasksExpanded, setIsSubtasksExpanded] = useState(true);
+  
   const completedSubtasks = task.subtasks.filter(st => st.isCompleted).length;
   const totalSubtasks = task.subtasks.length;
 
@@ -45,6 +48,14 @@ const TaskItem: React.FC<TaskItemProps> = ({
       onToggleComplete(task.id);
     }
   };
+
+  const toggleSubtasksExpand = () => {
+    setIsSubtasksExpanded(!isSubtasksExpanded);
+  };
+
+  const canAddSubtasks = !task.isCompleted && !task.exercise;
+  const showSubtaskSection = totalSubtasks > 0 || canAddSubtasks;
+  const subtasksSectionId = `subtasks-section-${task.id}`;
 
   return (
     <div className="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-lg mb-4 hover:shadow-xl transition-shadow duration-300 ease-in-out">
@@ -70,6 +81,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
                   : 'text-text_primary-light dark:text-text_primary-dark'
               }`}
             >
+              {task.emoji && <span className="mr-2 text-xl" role="img" aria-label="Emoji da tarefa">{task.emoji}</span>}
               {task.title}
             </h3>
             <div className="flex items-center space-x-1.5 flex-shrink-0 ml-2">
@@ -95,15 +107,10 @@ const TaskItem: React.FC<TaskItemProps> = ({
               {task.description}
             </p>
           )}
-           {totalSubtasks > 0 && (
-             <p className="text-xs mt-2 text-text_secondary-light dark:text-text_secondary-dark">
-               {completedSubtasks}/{totalSubtasks} subtarefas concluídas
-             </p>
-           )}
-
+          
           {task.exercise && (
             <div 
-              className="mt-2 pt-2 border-t border-border_color-light/40 dark:border-border_color_dark/40 flex items-center space-x-2"
+              className="mt-2 pt-2 border-t border-border_color-light/40 dark:border-border_color-dark/40 flex items-center space-x-2"
               title="Exercício Vinculado à Tarefa"
             >
               <AcademicCapIcon className="w-4 h-4 text-secondary-light dark:text-secondary-dark flex-shrink-0" />
@@ -121,18 +128,42 @@ const TaskItem: React.FC<TaskItemProps> = ({
         </div>
       </div>
 
-      {(task.subtasks.length > 0 || (!task.isCompleted && !task.exercise)) && ( 
+      {showSubtaskSection && (
         <div className={`mt-4 pt-3 ${!task.exercise ? 'border-t border-border_color-light/50 dark:border-border_color_dark/50' : ''}`}>
-          {task.subtasks.map(subtask => (
-            <SubtaskItem
-              key={subtask.id}
-              subtask={subtask}
-              onToggleComplete={() => onToggleSubtaskComplete(task.id, subtask.id)}
-              onDelete={() => onDeleteSubtask(task.id, subtask.id)}
-              onEdit={() => onEditSubtask(task.id, subtask)} // Changed to pass full subtask
-            />
-          ))}
-          {!task.isCompleted && !task.exercise && <SubtaskInput onAddSubtask={(title) => onAddSubtask(task.id, title)} />}
+          <div className="flex justify-between items-center mb-2 px-1">
+            <h4 className="text-sm font-medium text-text_secondary-light dark:text-text_secondary-dark">
+              Subtarefas 
+              {totalSubtasks > 0 && (
+                <span className="ml-1 text-xs">({completedSubtasks}/{totalSubtasks})</span>
+              )}
+            </h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSubtasksExpand}
+              className="!p-1.5"
+              aria-expanded={isSubtasksExpanded}
+              aria-controls={subtasksSectionId}
+              aria-label={isSubtasksExpanded ? 'Minimizar subtarefas' : 'Expandir subtarefas'}
+            >
+              {isSubtasksExpanded ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
+            </Button>
+          </div>
+
+          {isSubtasksExpanded && (
+            <div id={subtasksSectionId}>
+              {task.subtasks.map(subtask => (
+                <SubtaskItem
+                  key={subtask.id}
+                  subtask={subtask}
+                  onToggleComplete={() => onToggleSubtaskComplete(task.id, subtask.id)}
+                  onDelete={() => onDeleteSubtask(task.id, subtask.id)}
+                  onEdit={() => onEditSubtask(task.id, subtask)}
+                />
+              ))}
+              {canAddSubtasks && <SubtaskInput onAddSubtask={(title) => onAddSubtask(task.id, title)} />}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -33,8 +33,8 @@ const App: React.FC = () => {
     toggleSubtaskComplete,
     updateExercise,
     removeExerciseFromTask,
-    updateSubtaskExercise, // New hook function
-    removeExerciseFromSubtask, // New hook function
+    updateSubtaskExercise, 
+    removeExerciseFromSubtask, 
   } = useTasks();
 
   const [currentView, setCurrentView] = useState<ViewMode>('tasks');
@@ -76,8 +76,9 @@ const App: React.FC = () => {
     description?: string; 
     priority: Priority;
     exercise?: { title: string; statement: string };
+    emoji?: string; // Added emoji
   }) => {
-    addTask(data.title, data.description, data.priority, data.exercise);
+    addTask(data.title, data.description, data.priority, data.exercise, data.emoji); // Pass emoji
   }, [addTask]);
 
   const handleEditTaskSubmit = useCallback((data: { 
@@ -85,6 +86,7 @@ const App: React.FC = () => {
     description?: string; 
     priority: Priority;
     exercise?: { title: string; statement: string } | null;
+    emoji?: string; // Added emoji
   }) => {
     if (taskToEdit) {
       let exerciseForEditTask: ExerciseDetails | null | undefined;
@@ -106,7 +108,8 @@ const App: React.FC = () => {
         description: data.description,
         priority: data.priority,
         exercise: exerciseForEditTask,
-        isCompleted: taskToEdit.isCompleted 
+        isCompleted: taskToEdit.isCompleted,
+        emoji: data.emoji, // Pass emoji
       });
       handleCloseEditModal();
     }
@@ -154,7 +157,6 @@ const App: React.FC = () => {
     }
   }, [editingSubtaskInfo, editSubtask, handleCloseEditSubtaskModal]);
 
-  // Handlers for ExerciseViewer (for subtask exercises)
   const handleEditSubtaskExerciseRequest = useCallback((taskId: string, subtaskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     const subtask = task?.subtasks.find(st => st.id === subtaskId);
@@ -163,9 +165,9 @@ const App: React.FC = () => {
     }
   }, [tasks, handleOpenEditSubtaskModal]);
 
-  const handleUpdateTaskExercise = updateExercise; // Alias for clarity
+  const handleUpdateTaskExercise = updateExercise; 
   const handleUpdateSubtaskExercise = updateSubtaskExercise;
-  const handleRemoveTaskExercise = removeExerciseFromTask; // Alias for clarity
+  const handleRemoveTaskExercise = removeExerciseFromTask; 
   const handleRemoveSubtaskExercise = removeExerciseFromSubtask;
 
 
@@ -199,7 +201,7 @@ const App: React.FC = () => {
         setAutoplayNextVideo(false);
     }
     if (playerState === window.YT.PlayerState.UNSTARTED || playerState === window.YT.PlayerState.ENDED) {
-        setAutoplayNextVideo(false); // Reset if video ends or is unstarted
+        setAutoplayNextVideo(false); 
     }
 
   }, [autoplayNextVideo]);
@@ -305,8 +307,8 @@ const App: React.FC = () => {
                 onEditSubtask={handleOpenEditSubtaskModal}
                 onDeleteSubtask={deleteSubtask}
                 onToggleSubtaskComplete={toggleSubtaskComplete}
-                onUpdateExercise={updateExercise} // This is for task's direct exercise
-                onRemoveExercise={removeExerciseFromTask} // This is for task's direct exercise
+                onUpdateExercise={updateExercise} 
+                onRemoveExercise={removeExerciseFromTask} 
               />
             </div>
           </>
@@ -314,7 +316,7 @@ const App: React.FC = () => {
       case 'exercises':
         return (
           <ExerciseViewer
-            tasks={tasks} // Pass all tasks, viewer will extract exercises
+            tasks={tasks} 
             onEditTaskRequest={handleOpenEditModal}
             onUpdateTaskExercise={handleUpdateTaskExercise}
             onRemoveTaskExercise={handleRemoveTaskExercise}
@@ -363,6 +365,7 @@ const App: React.FC = () => {
               description: taskToEdit.description,
               priority: taskToEdit.priority,
               exercise: taskToEdit.exercise,
+              emoji: taskToEdit.emoji, // Pass emoji to edit form
             }}
             submitButtonText="Salvar Alterações"
             onCancel={handleCloseEditModal}
@@ -413,7 +416,7 @@ const App: React.FC = () => {
       </div>
 
        <footer className="text-center py-6 text-sm text-text_secondary-light dark:text-text_secondary-dark border-t border-border_color-light dark:border-border_color-dark">
-        © {new Date().getFullYear()} ToDo. Feito com ❤️.
+        © {new Date().getFullYear()} ToDo. Feito com ❤️ e ✨.
       </footer>
     </div>
   );

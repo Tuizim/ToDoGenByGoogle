@@ -1,23 +1,24 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { Task, Priority, ExerciseDetails } from '../types';
 import { PRIORITY_OPTIONS, PRIORITY_TEXT_COLORS } from '../constants';
 import Button from './Button';
 import PlusIcon from './icons/PlusIcon';
+import EmojiPicker from './EmojiPicker'; // Added EmojiPicker
 
 interface TaskFormProps {
   onSubmit: (data: { 
     title: string; 
     description?: string; 
     priority: Priority; 
-    exercise?: { title: string; statement: string } | null; // null to remove exercise
+    exercise?: { title: string; statement: string } | null;
+    emoji?: string; // Added emoji
   }) => void;
-  initialData?: Partial<Pick<Task, 'title' | 'description' | 'priority' | 'exercise'>>;
+  initialData?: Partial<Pick<Task, 'title' | 'description' | 'priority' | 'exercise' | 'emoji'>>; // Added emoji
   submitButtonText?: string;
   onCancel?: () => void;
   isEditMode?: boolean;
-  formIdPrefix?: string; // Added for unique IDs
+  formIdPrefix?: string;
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({ 
@@ -26,11 +27,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
   submitButtonText = 'Adicionar',
   onCancel,
   isEditMode = false,
-  formIdPrefix = 'form-', // Default prefix
+  formIdPrefix = 'form-',
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<Priority>(Priority.Media);
+  const [selectedEmoji, setSelectedEmoji] = useState<string | undefined>(undefined); // Added emoji state
   const [hasExercise, setHasExercise] = useState(false);
   const [exerciseTitle, setExerciseTitle] = useState('');
   const [exerciseStatement, setExerciseStatement] = useState('');
@@ -40,6 +42,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
       setTitle(initialData.title || '');
       setDescription(initialData.description || '');
       setPriority(initialData.priority || Priority.Media);
+      setSelectedEmoji(initialData.emoji); // Set initial emoji
       if (initialData.exercise) {
         setHasExercise(true);
         setExerciseTitle(initialData.exercise.title || '');
@@ -50,10 +53,10 @@ const TaskForm: React.FC<TaskFormProps> = ({
         setExerciseStatement('');
       }
     } else {
-        // Reset for new task form (when initialData is not provided)
         setTitle('');
         setDescription('');
         setPriority(Priority.Media);
+        setSelectedEmoji(undefined); // Reset emoji for new task
         setHasExercise(false);
         setExerciseTitle('');
         setExerciseStatement('');
@@ -78,12 +81,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
       exerciseData = null;
     }
 
-    onSubmit({ title, description, priority, exercise: exerciseData });
+    onSubmit({ title, description, priority, exercise: exerciseData, emoji: selectedEmoji }); // Pass emoji
     
     if (!isEditMode) {
       setTitle('');
       setDescription('');
       setPriority(Priority.Media);
+      setSelectedEmoji(undefined); // Reset emoji after submit for new task
       setHasExercise(false);
       setExerciseTitle('');
       setExerciseStatement('');
@@ -103,13 +107,13 @@ const TaskForm: React.FC<TaskFormProps> = ({
   const toggleLabel = getToggleLabel();
   const isRemovingExercise = isEditMode && initialData?.exercise && !hasExercise;
 
-  // Generate unique IDs
   const titleId = `${formIdPrefix}task-title`;
   const descriptionId = `${formIdPrefix}task-description`;
   const priorityId = `${formIdPrefix}task-priority`;
   const exerciseToggleId = `${formIdPrefix}task-has-exercise-toggle`;
   const exerciseTitleId = `${formIdPrefix}exercise-title`;
   const exerciseStatementId = `${formIdPrefix}exercise-statement`;
+  const emojiPickerButtonId = `${formIdPrefix}emoji-picker-button`;
 
   return (
     <form onSubmit={handleSubmit} className={`rounded-xl ${!isEditMode ? 'bg-surface-light dark:bg-surface-dark shadow-md p-6 sm:p-8 mb-8' : 'p-1'}`}>
@@ -117,15 +121,23 @@ const TaskForm: React.FC<TaskFormProps> = ({
         <label htmlFor={titleId} className="block text-sm font-medium text-text_secondary-light dark:text-text_secondary-dark mb-1.5">
           Título da Tarefa
         </label>
-        <input
-          type="text"
-          id={titleId}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Ex: Fazer compras"
-          className="w-full px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
-          required
-        />
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          <EmojiPicker 
+            selectedEmoji={selectedEmoji}
+            onEmojiSelect={setSelectedEmoji}
+            onRemoveEmoji={() => setSelectedEmoji(undefined)}
+            buttonId={emojiPickerButtonId}
+          />
+          <input
+            type="text"
+            id={titleId}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Ex: Fazer compras"
+            className="flex-grow px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
+            required
+          />
+        </div>
       </div>
 
       <div className="mb-5">
@@ -162,7 +174,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 
       <div className="mb-5 p-4 border border-border_color-light dark:border-border_color-dark rounded-lg bg-slate-50 dark:bg-slate-800/30">
         <label htmlFor={exerciseToggleId} className="flex items-center cursor-pointer select-none">
-          <div className="relative"> {/* Positioning context for the knob */}
+          <div className="relative">
             <input
               type="checkbox"
               id={exerciseToggleId}
@@ -171,9 +183,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               onChange={(e) => setHasExercise(e.target.checked)}
               aria-label={toggleLabel}
             />
-            {/* Track */}
             <div className={`block w-12 h-7 rounded-full transition-colors duration-150 ease-in-out ${hasExercise ? 'bg-teal-500 dark:bg-teal-400' : 'bg-slate-300 dark:bg-slate-500'}`}></div>
-            {/* Knob */}
             <div className={`absolute top-1 bg-white w-5 h-5 rounded-full transition-all duration-150 ease-in-out ${hasExercise ? 'right-1' : 'left-1'}`}></div>
           </div>
           <span className={`ml-3 text-sm font-medium ${isRemovingExercise ? 'text-danger-light dark:text-danger-dark font-semibold' : 'text-text_secondary-light dark:text-text_secondary-dark'}`}>
