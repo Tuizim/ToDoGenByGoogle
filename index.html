@@ -65,6 +65,25 @@
   }
 }
 </script>
+<style>
+  /* Light mode autofill override for YouTube URL input */
+  #youtube-url-input:-webkit-autofill,
+  #youtube-url-input:-webkit-autofill:hover,
+  #youtube-url-input:-webkit-autofill:focus,
+  #youtube-url-input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #FFFFFF inset !important; /* white */
+    -webkit-text-fill-color: #1e293b !important; /* text_primary.light (slate-800) */
+  }
+
+  /* Dark mode autofill override for YouTube URL input */
+  html.dark #youtube-url-input:-webkit-autofill,
+  html.dark #youtube-url-input:-webkit-autofill:hover,
+  html.dark #youtube-url-input:-webkit-autofill:focus,
+  html.dark #youtube-url-input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #334155 inset !important; /* slate-700 */
+    -webkit-text-fill-color: #e2e8f0 !important; /* text_primary.dark (slate-200) */
+  }
+</style>
 </head>
   <body class="bg-background-light dark:bg-background-dark text-text_primary-light dark:text-text_primary-dark transition-colors duration-300 font-sans">
     <div id="root"></div>
