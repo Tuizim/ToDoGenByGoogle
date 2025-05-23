@@ -11,42 +11,42 @@
         theme: {
           extend: {
             colors: {
-              primary: { // Calm Blue (Sky)
-                light: '#0EA5E9', // sky-500
-                DEFAULT: '#0EA5E9', // sky-500
-                dark: '#38BDF8',  // sky-400 (lighter for dark mode accent)
+              primary: { // Modern Teal
+                light: '#14b8a6', // teal-500
+                DEFAULT: '#14b8a6', // teal-500
+                dark: '#2dd4bf',  // teal-400 (lighter for dark mode accent)
               },
-              secondary: { // Kept emerald, can be reviewed if clashes
+              secondary: { // Emerald - Kept for contrast, works well with teal
                 light: '#10B981', // emerald-500
                 DEFAULT: '#10B981',
                 dark: '#34D399', // emerald-400
               },
-              background: { // Lighter, cleaner backgrounds
+              background: {
                 light: '#F8FAFC', // slate-50
                 DEFAULT: '#F8FAFC',
-                dark: '#0F172A',   // slate-900
+                dark: '#0B1120',   // slightly deeper slate-900 for more depth
               },
               surface: { // For cards, modals
-                light: '#FFFFFF', // white
-                DEFAULT: '#FFFFFF',
+                light: '#F8FAFC', // CHANGED: Was '#FFFFFF', now slate-50 (same as background.light)
+                DEFAULT: '#F8FAFC',
                 dark: '#1E293B',   // slate-800
               },
-              text_primary: { // Softer text colors
-                light: '#334155', // slate-700
-                DEFAULT: '#334155',
-                dark: '#E2E8F0',   // slate-200
+              text_primary: {
+                light: '#1e293b', // slate-800 (darker for better contrast on light bg)
+                DEFAULT: '#1e293b',
+                dark: '#e2e8f0',   // slate-200
               },
               text_secondary: {
-                light: '#64748B', // slate-500
-                DEFAULT: '#64748B',
-                dark: '#94A3B8',   // slate-400
+                light: '#475569', // slate-600 (adjusted for better readability)
+                DEFAULT: '#475569',
+                dark: '#94a3b8',   // slate-400
               },
-              border_color: { // Dedicated border color for consistency
-                light: '#E2E8F0', // slate-200
-                DEFAULT: '#E2E8F0',
-                dark: '#475569',   // slate-600 (adjusted for better visibility on slate-800 surface)
+              border_color: {
+                light: '#cbd5e1', // slate-300 (slightly more visible)
+                DEFAULT: '#cbd5e1',
+                dark: '#334155',   // slate-700 (adjusted for better visibility on slate-800 surface)
               },
-              danger: { // Keep as is, standard for errors
+              danger: {
                 light: '#EF4444', // red-500
                 DEFAULT: '#EF4444',
                 dark: '#F87171', // red-400
@@ -66,7 +66,7 @@
 }
 </script>
 </head>
-  <body class="bg-background-light dark:bg-background-dark text-text_primary-light dark:text-text_primary-dark transition-colors duration-300">
+  <body class="bg-background-light dark:bg-background-dark text-text_primary-light dark:text-text_primary-dark transition-colors duration-300 font-sans">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

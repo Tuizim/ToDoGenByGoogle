@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import Button from './Button';
 import PlayCircleIcon from './icons/PlayCircleIcon';
@@ -43,8 +44,8 @@ const GlobalPlayerControls: React.FC<GlobalPlayerControlsProps> = ({
   }
 
   const MinimizedIcon = () => {
-    if (isLoading) return <LoadingSpinnerIcon className="w-6 h-6 text-primary-light dark:text-primary-dark" />;
-    if (errorMessage) return <ExclamationTriangleIcon className="w-6 h-6 text-danger-light dark:text-danger-dark" />;
+    if (isLoading) return <LoadingSpinnerIcon className="w-6 h-6" />; // Color will be inherited (text-white)
+    if (errorMessage) return <ExclamationTriangleIcon className="w-6 h-6 text-danger-light dark:text-danger-dark" />; // Error icon distinct color
     return isPlaying ? <PauseIcon className="w-6 h-6" /> : <PlayCircleIcon className="w-6 h-6" />;
   };
 
@@ -52,7 +53,7 @@ const GlobalPlayerControls: React.FC<GlobalPlayerControlsProps> = ({
     return (
       <button
         onClick={toggleExpand}
-        className="fixed bottom-4 right-4 z-50 w-12 h-12 sm:w-14 sm:h-14 bg-primary-DEFAULT dark:bg-primary-dark text-white rounded-full shadow-lg flex items-center justify-center hover:bg-sky-600 dark:hover:bg-sky-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-primary-light"
+        className="fixed bottom-4 right-4 z-50 w-12 h-12 sm:w-14 sm:h-14 bg-teal-500 dark:bg-teal-400 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-teal-600 dark:hover:bg-teal-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background-light dark:focus:ring-offset-background-dark focus:ring-teal-500"
         aria-label="Abrir controles do player"
         title={isLoading ? "Carregando..." : errorMessage ? "Erro no player" : isPlaying ? "Pausar" : "Reproduzir"}
       >
@@ -111,7 +112,7 @@ const GlobalPlayerControls: React.FC<GlobalPlayerControlsProps> = ({
               max="100"
               value={volume}
               onChange={(e) => onChangeVolume(parseInt(e.target.value, 10))}
-              className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-primary-DEFAULT"
+              className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-lg appearance-none cursor-pointer accent-teal-500"
               disabled={isLoading} // Only disabled if actively loading
               aria-label="Controle de volume"
             />

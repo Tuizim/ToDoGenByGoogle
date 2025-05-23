@@ -24,7 +24,7 @@ const SubtaskInput: React.FC<SubtaskInputProps> = ({ onAddSubtask }) => {
         value={subtaskTitle}
         onChange={(e) => setSubtaskTitle(e.target.value)}
         placeholder="Adicionar subtarefa..."
-        className="flex-grow px-3 py-1.5 border border-border_color-light dark:border-border_color-dark rounded-md shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT bg-background-light dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
+        className="flex-grow px-3 py-1.5 border border-border_color-light dark:border-border_color-dark rounded-md shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
       />
       <Button type="submit" variant="ghost" size="sm" className="!p-2" aria-label="Adicionar subtarefa">
         <PlusIcon className="w-4 h-4" />

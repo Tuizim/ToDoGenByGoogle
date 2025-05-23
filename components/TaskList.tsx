@@ -1,16 +1,16 @@
 
 import React, { useMemo } from 'react';
-import { Task, ExerciseDetails, TaskFilterOptionId } from '../types';
+import { Task, ExerciseDetails, TaskFilterOptionId, Subtask } from '../types'; // Added Subtask
 import TaskItem from './TaskItem';
 
 interface TaskListProps {
-  tasks: Task[]; // This should be the original, unfiltered list of tasks
+  tasks: Task[]; 
   taskFilter: TaskFilterOptionId;
   onToggleComplete: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (task: Task) => void;
   onAddSubtask: (taskId: string, subtaskTitle: string) => void;
-  onEditSubtask: (taskId: string, subtaskId: string, newTitle: string) => void;
+  onEditSubtask: (taskId: string, subtask: Subtask) => void; // Changed signature
   onDeleteSubtask: (taskId: string, subtaskId: string) => void;
   onToggleSubtaskComplete: (taskId: string, subtaskId: string) => void;
   onUpdateExercise: (taskId: string, exerciseUpdates: Partial<ExerciseDetails>) => void;
@@ -31,12 +31,10 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, taskFilter, ...taskActions }
   const sortedTasks = useMemo(() => 
     [...filteredTasks].sort((a, b) => {
       if (taskFilter === 'all') {
-        // If showing all, sort by completion status first (pending first), then by creation date
         if (a.isCompleted !== b.isCompleted) {
-          return a.isCompleted ? 1 : -1; // completed tasks go to the end
+          return a.isCompleted ? 1 : -1; 
         }
       }
-      // For 'pending', 'completed', or if completion status is the same in 'all' view, sort by creation date (newest first)
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }), [filteredTasks, taskFilter]);
 
@@ -45,7 +43,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, taskFilter, ...taskActions }
     let emptyMessage = "Nenhuma tarefa ainda.";
     let subMessage = "Adicione uma nova tarefa para começar!";
 
-    if (tasks.length > 0) { // Original tasks exist, but filter yields no results
+    if (tasks.length > 0) { 
       if (taskFilter === 'pending') {
         emptyMessage = "Nenhuma tarefa pendente.";
         subMessage = "Ótimo trabalho! Ou adicione novas tarefas.";

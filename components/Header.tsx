@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Theme, ViewMode } from '../types';
 import SunIcon from './icons/SunIcon';
@@ -20,8 +21,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, currentView, onNavigate }) => {
   
   const navButtonBaseClasses = "!p-2 text-sm sm:text-base flex items-center rounded-md";
-  const navButtonInactiveClasses = "hover:bg-slate-100 dark:hover:bg-slate-700";
-  const navButtonActiveClasses = "bg-primary-light/10 dark:bg-primary-dark/20 text-primary-light dark:text-primary-dark font-semibold ring-1 ring-primary-light/30 dark:ring-primary-dark/40";
+  const navButtonInactiveClasses = "hover:bg-slate-200 dark:hover:bg-slate-700"; // Updated hover for light
+  const navButtonActiveClasses = "bg-teal-500/10 dark:bg-teal-400/20 text-teal-500 dark:text-teal-400 font-semibold ring-1 ring-teal-500/30 dark:ring-teal-400/40";
 
   return (
     <header className="py-3 sm:py-4 px-4 sm:px-6 lg:px-8 bg-surface-light dark:bg-surface-dark border-b border-border_color-light dark:border-border_color-dark sticky top-0 z-40">
@@ -31,8 +32,8 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, currentView, onNavi
           className="flex items-center space-x-2 sm:space-x-3 group focus:outline-none"
           aria-label={`Ir para ${APP_TITLE} - Tarefas`}
         >
-          <CheckSquareIcon className="w-7 h-7 sm:w-8 sm:h-8 text-primary-light dark:text-primary-dark group-hover:opacity-80 transition-opacity" />
-          <h1 className="text-xl sm:text-2xl font-bold text-primary-light dark:text-primary-dark group-hover:opacity-80 transition-opacity">{APP_TITLE}</h1>
+          <CheckSquareIcon className="w-7 h-7 sm:w-8 sm:h-8 text-teal-500 dark:text-teal-400 group-hover:opacity-80 transition-opacity" />
+          <h1 className="text-xl sm:text-2xl font-bold text-teal-500 dark:text-teal-400 group-hover:opacity-80 transition-opacity">{APP_TITLE}</h1>
         </button>
         
         <nav className="flex items-center space-x-1 sm:space-x-2">
@@ -71,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({ theme, toggleTheme, currentView, onNavi
           
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-text_primary-light dark:text-text_primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-primary-light/50 dark:focus:ring-primary-dark/50"
+            className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-text_primary-light dark:text-text_primary-dark transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500/50 dark:focus:ring-teal-400/50"
             aria-label={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
           >
             {theme === 'light' ? <MoonIcon className="w-5 h-5 sm:w-6 sm:h-6" /> : <SunIcon className="w-5 h-5 sm:w-6 sm:h-6" />}

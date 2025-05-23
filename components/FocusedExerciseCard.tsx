@@ -1,5 +1,7 @@
+
+
 import React from 'react';
-import { Task, ExerciseDetails } from '../types';
+import { DisplayedExercise, ExerciseDetails, Task } from '../types'; // Task might still be needed for onEditTaskRequest if it expects a full Task object
 import AcademicCapIcon from './icons/AcademicCapIcon';
 import EditIcon from './icons/EditIcon';
 import TrashIcon from './icons/TrashIcon';
@@ -7,40 +9,72 @@ import CheckIcon from './icons/CheckIcon';
 import Button from './Button';
 
 interface FocusedExerciseCardProps {
-  task: Task; // Task guaranteed to have an exercise
-  onUpdateExercise: (taskId: string, exerciseUpdates: Partial<ExerciseDetails>) => void;
-  onEditTask: (task: Task) => void;
-  onRemoveExercise: (taskId: string) => void;
-  isSelected?: boolean; // Optional: for highlighting if selected via dropdown
+  displayedExercise: DisplayedExercise;
+  onUpdateTaskExercise: (taskId: string, exerciseUpdates: Partial<ExerciseDetails>) => void;
+  onEditTaskRequest: (task: Task) => void; // Expects a Task object for editing task-related exercises
+  onRemoveTaskExercise: (taskId: string) => void;
+  
+  onUpdateSubtaskExercise: (taskId: string, subtaskId: string, exerciseUpdates: Partial<ExerciseDetails>) => void;
+  onEditSubtaskRequest: (taskId: string, subtaskId: string) => void;
+  onRemoveSubtaskExercise: (taskId: string, subtaskId: string) => void;
+  isSelected?: boolean;
 }
 
 const FocusedExerciseCard: React.FC<FocusedExerciseCardProps> = ({
-  task,
-  onUpdateExercise,
-  onEditTask,
-  onRemoveExercise,
+  displayedExercise,
+  onUpdateTaskExercise,
+  onEditTaskRequest,
+  onRemoveTaskExercise,
+  onUpdateSubtaskExercise,
+  onEditSubtaskRequest,
+  onRemoveSubtaskExercise,
   isSelected,
 }) => {
-  const exercise = task.exercise!; // Assert exercise exists
+  const { exercise, originType, taskId, taskTitle, subtaskId, subtaskTitle, rawTask } = displayedExercise;
 
   const handleCheckboxChange = () => {
-    onUpdateExercise(task.id, { isCompleted: !exercise.isCompleted });
+    const updates = { isCompleted: !exercise.isCompleted };
+    if (originType === 'task') {
+      onUpdateTaskExercise(taskId, updates);
+    } else if (originType === 'subtask' && subtaskId) {
+      onUpdateSubtaskExercise(taskId, subtaskId, updates);
+    }
   };
+
+  const handleEdit = () => {
+    if (originType === 'task' && rawTask) {
+      onEditTaskRequest(rawTask); 
+    } else if (originType === 'subtask' && subtaskId) {
+      onEditSubtaskRequest(taskId, subtaskId);
+    }
+  };
+
+  const handleRemove = () => {
+    if (originType === 'task') {
+      onRemoveTaskExercise(taskId);
+    } else if (originType === 'subtask' && subtaskId) {
+      onRemoveSubtaskExercise(taskId, subtaskId);
+    }
+  };
+  
+  const originText = originType === 'task' 
+    ? `Referente à Tarefa: ${taskTitle}`
+    : `Referente à Subtarefa: ${subtaskTitle} (da Tarefa: ${taskTitle})`;
 
   return (
     <div 
-      id={`exercise-card-${task.id}`} 
-      className={`bg-surface-light dark:bg-surface-dark p-5 sm:p-6 rounded-xl shadow-lg mb-6 transition-all duration-300 ease-in-out ${isSelected ? 'ring-2 ring-primary-DEFAULT shadow-xl' : 'hover:shadow-xl'}`}
-      aria-labelledby={`exercise-title-${task.id}`}
+      id={`exercise-card-${displayedExercise.id}`} 
+      className={`bg-surface-light dark:bg-surface-dark p-5 sm:p-6 rounded-xl shadow-lg mb-6 transition-all duration-300 ease-in-out ${isSelected ? 'ring-2 ring-teal-500 shadow-xl' : 'hover:shadow-xl'}`}
+      aria-labelledby={`exercise-title-${displayedExercise.id}`}
     >
       <p className="text-xs sm:text-sm text-text_secondary-light dark:text-text_secondary-dark mb-2">
-        Referente à Tarefa: <span className="font-medium text-text_primary-light dark:text-text_primary-dark">{task.title}</span>
+        <span className="font-medium text-text_primary-light dark:text-text_primary-dark">{originText}</span>
       </p>
       
       <div className="flex items-start sm:items-center mb-3">
         <AcademicCapIcon className="w-6 h-6 sm:w-7 sm:h-7 text-secondary-light dark:text-secondary-dark mr-3 flex-shrink-0" />
         <h3 
-            id={`exercise-title-${task.id}`}
+            id={`exercise-title-${displayedExercise.id}`}
             className={`text-lg sm:text-xl font-bold text-text_primary-light dark:text-text_primary-dark break-words ${exercise.isCompleted ? 'line-through opacity-70' : ''}`}
         >
           {exercise.title}
@@ -65,9 +99,9 @@ const FocusedExerciseCard: React.FC<FocusedExerciseCardProps> = ({
             {exercise.isCompleted && <CheckIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
           </button>
           <label 
-            htmlFor={`exercise-complete-${task.id}`} // Visually associated, actual input is the button
+            htmlFor={`exercise-complete-${displayedExercise.id}`} 
             className={`text-sm font-medium cursor-pointer ${exercise.isCompleted ? 'text-text_secondary-light dark:text-text_secondary-dark opacity-70' : 'text-text_primary-light dark:text-text_primary-dark'}`}
-            onClick={handleCheckboxChange} // Allow clicking label to toggle
+            onClick={handleCheckboxChange}
           >
             {exercise.isCompleted ? 'Exercício Concluído' : 'Marcar como Concluído'}
           </label>
@@ -77,20 +111,20 @@ const FocusedExerciseCard: React.FC<FocusedExerciseCardProps> = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => onEditTask(task)} 
+            onClick={handleEdit} 
             className="flex items-center"
-            aria-label={`Editar tarefa e exercício ${exercise.title}`}
+            aria-label={`Editar ${originType === 'task' ? 'tarefa' : 'subtarefa'} e exercício ${exercise.title}`}
           >
             <EditIcon className="w-4 h-4 mr-1.5" />
             Editar
           </Button>
-          {!exercise.isCompleted && (
+          {!exercise.isCompleted && ( // Usually, completed items are not removed directly, but uncompleted first
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => onRemoveExercise(task.id)} 
+              onClick={handleRemove} 
               className="flex items-center text-danger-light dark:text-danger-dark hover:bg-red-50 dark:hover:bg-red-900/30"
-              aria-label={`Remover exercício ${exercise.title}`}
+              aria-label={`Remover exercício ${exercise.title} de ${originType === 'task' ? 'tarefa' : 'subtarefa'}`}
             >
               <TrashIcon className="w-4 h-4 mr-1.5" />
               Remover

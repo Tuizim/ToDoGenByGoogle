@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import Button from './Button';
 import { TASK_FILTER_OPTIONS } from '../constants';
@@ -11,8 +12,8 @@ interface TaskFilterControlsProps {
 
 const TaskFilterControls: React.FC<TaskFilterControlsProps> = ({ currentFilter, onFilterChange }) => {
   const buttonBaseClasses = "flex-1 sm:flex-none !py-2 !px-3 text-sm sm:text-base rounded-md transition-colors duration-150";
-  const buttonInactiveClasses = "hover:bg-slate-100 dark:hover:bg-slate-700 text-text_secondary-light dark:text-text_secondary-dark border border-border_color-light dark:border-border_color-dark";
-  const buttonActiveClasses = "bg-primary-light/10 dark:bg-primary-dark/20 text-primary-light dark:text-primary-dark font-semibold ring-1 ring-primary-light/30 dark:ring-primary-dark/40 border border-primary-light/30 dark:border-primary-dark/40";
+  const buttonInactiveClasses = "hover:bg-slate-200 dark:hover:bg-slate-700 text-text_secondary-light dark:text-text_secondary-dark border border-border_color-light dark:border-border_color-dark";
+  const buttonActiveClasses = "bg-teal-500/10 dark:bg-teal-400/20 text-teal-500 dark:text-teal-400 font-semibold ring-1 ring-teal-500/30 dark:ring-teal-400/40 border border-teal-500/30 dark:border-teal-400/40";
 
   return (
     <nav aria-label="Filtros de tarefas" className="mb-5 sm:mb-6">

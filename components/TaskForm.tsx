@@ -123,7 +123,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Ex: Fazer compras"
-          className="w-full px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT bg-background-light dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
+          className="w-full px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
           required
         />
       </div>
@@ -138,7 +138,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Ex: Comprar frutas, legumes e leite"
           rows={3}
-          className="w-full px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT bg-background-light dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
+          className="w-full px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
         />
       </div>
 
@@ -150,7 +150,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
           id={priorityId}
           value={priority}
           onChange={(e) => setPriority(e.target.value as Priority)}
-          className={`w-full px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT bg-background-light dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark ${PRIORITY_TEXT_COLORS[priority]}`}
+          className={`w-full px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark ${PRIORITY_TEXT_COLORS[priority]}`}
         >
           {PRIORITY_OPTIONS.map((p) => (
             <option key={p} value={p} className={`${PRIORITY_TEXT_COLORS[p]} bg-surface-light dark:bg-surface-dark`}>
@@ -172,7 +172,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
               aria-label={toggleLabel}
             />
             {/* Track */}
-            <div className={`block w-12 h-7 rounded-full transition-colors duration-150 ease-in-out ${hasExercise ? 'bg-primary-DEFAULT dark:bg-primary-dark' : 'bg-slate-300 dark:bg-slate-500'}`}></div>
+            <div className={`block w-12 h-7 rounded-full transition-colors duration-150 ease-in-out ${hasExercise ? 'bg-teal-500 dark:bg-teal-400' : 'bg-slate-300 dark:bg-slate-500'}`}></div>
             {/* Knob */}
             <div className={`absolute top-1 bg-white w-5 h-5 rounded-full transition-all duration-150 ease-in-out ${hasExercise ? 'right-1' : 'left-1'}`}></div>
           </div>
@@ -193,7 +193,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 value={exerciseTitle}
                 onChange={(e) => setExerciseTitle(e.target.value)}
                 placeholder="Ex: Cálculo de Força Resultante"
-                className="w-full px-3 py-2 border border-border_color-light dark:border-border_color-dark rounded-md shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT bg-background-light dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
+                className="w-full px-3 py-2 border border-border_color-light dark:border-border_color-dark rounded-md shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
               />
             </div>
             <div>
@@ -206,7 +206,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
                 onChange={(e) => setExerciseStatement(e.target.value)}
                 placeholder="Ex: Um corpo de massa 5kg está sujeito a duas forças..."
                 rows={4}
-                className="w-full px-3 py-2 border border-border_color-light dark:border-border_color-dark rounded-md shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT bg-background-light dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
+                className="w-full px-3 py-2 border border-border_color-light dark:border-border_color-dark rounded-md shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
               />
             </div>
           </div>

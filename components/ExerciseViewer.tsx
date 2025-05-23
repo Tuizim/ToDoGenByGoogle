@@ -1,34 +1,71 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
-import { Task, ExerciseDetails } from '../types';
+import { Task, ExerciseDetails, DisplayedExercise, Subtask } from '../types';
 import FocusedExerciseCard from './FocusedExerciseCard';
-import AcademicCapIcon from './icons/AcademicCapIcon'; // For empty state icon
+import AcademicCapIcon from './icons/AcademicCapIcon';
 
 interface ExerciseViewerProps {
   tasks: Task[];
-  onUpdateExercise: (taskId: string, exerciseUpdates: Partial<ExerciseDetails>) => void;
-  onEditTask: (task: Task) => void; // To open the main edit modal
-  onRemoveExercise: (taskId: string) => void;
+  onUpdateTaskExercise: (taskId: string, exerciseUpdates: Partial<ExerciseDetails>) => void;
+  onEditTaskRequest: (task: Task) => void; 
+  onRemoveTaskExercise: (taskId: string) => void;
+  
+  onUpdateSubtaskExercise: (taskId: string, subtaskId: string, exerciseUpdates: Partial<ExerciseDetails>) => void;
+  onEditSubtaskExerciseRequest: (taskId: string, subtaskId: string) => void;
+  onRemoveSubtaskExercise: (taskId: string, subtaskId: string) => void;
 }
 
 const ExerciseViewer: React.FC<ExerciseViewerProps> = ({ 
   tasks, 
-  onUpdateExercise, 
-  onEditTask,
-  onRemoveExercise 
+  onUpdateTaskExercise, 
+  onEditTaskRequest,
+  onRemoveTaskExercise,
+  onUpdateSubtaskExercise,
+  onEditSubtaskExerciseRequest,
+  onRemoveSubtaskExercise,
 }) => {
-  const exerciseTasks = useMemo(() => {
-    return tasks
-      .filter(task => !!task.exercise)
-      .sort((a, b) => {
-        // Sort by completion status (incomplete first), then by creation date (newest first)
-        if (a.exercise!.isCompleted !== b.exercise!.isCompleted) {
-          return a.exercise!.isCompleted ? 1 : -1;
+  const processedExercises = useMemo(() => {
+    const allExercises: DisplayedExercise[] = [];
+    tasks.forEach(task => {
+      if (task.exercise) {
+        allExercises.push({
+          id: task.id, // For task exercise, use task.id as the unique ID for the DisplayedExercise
+          exercise: task.exercise,
+          originType: 'task',
+          taskId: task.id,
+          taskTitle: task.title,
+          createdAt: task.createdAt,
+          isCompleted: task.exercise.isCompleted,
+          rawTask: task,
+        });
+      }
+      task.subtasks.forEach(subtask => {
+        if (subtask.exercise) {
+          allExercises.push({
+            id: subtask.id, // For subtask exercise, use subtask.id
+            exercise: subtask.exercise,
+            originType: 'subtask',
+            taskId: task.id,
+            taskTitle: task.title,
+            subtaskId: subtask.id,
+            subtaskTitle: subtask.title,
+            createdAt: subtask.createdAt || task.createdAt, // Use subtask createdAt if available, else task's
+            isCompleted: subtask.exercise.isCompleted,
+            rawSubtask: subtask,
+          });
         }
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
+    });
+
+    return allExercises.sort((a, b) => {
+      if (a.isCompleted !== b.isCompleted) {
+        return a.isCompleted ? 1 : -1;
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
   }, [tasks]);
 
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
   const [scrollTarget, setScrollTarget] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,39 +73,37 @@ const ExerciseViewer: React.FC<ExerciseViewerProps> = ({
       const element = document.getElementById(`exercise-card-${scrollTarget}`);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Highlight briefly (optional)
         element.classList.add('ring-2', 'ring-primary-DEFAULT', 'shadow-xl');
         setTimeout(() => {
           element.classList.remove('ring-2', 'ring-primary-DEFAULT', 'shadow-xl');
-        }, 1500); // Keep highlight for 1.5 seconds
+        }, 1500);
       }
-      setScrollTarget(null); // Reset scroll target
+      setScrollTarget(null);
     }
   }, [scrollTarget]);
   
-  // If the selected exercise is removed or no longer an exercise, reset the dropdown
   useEffect(() => {
-    if (selectedTaskId && !exerciseTasks.find(task => task.id === selectedTaskId)) {
-        setSelectedTaskId(null);
+    if (selectedExerciseId && !processedExercises.find(ex => ex.id === selectedExerciseId)) {
+        setSelectedExerciseId(null);
     }
-  }, [exerciseTasks, selectedTaskId]);
+  }, [processedExercises, selectedExerciseId]);
 
 
-  if (exerciseTasks.length === 0) {
+  if (processedExercises.length === 0) {
     return (
       <div className="text-center py-12">
         <AcademicCapIcon className="mx-auto h-24 w-24 text-slate-300 dark:text-slate-600" />
         <p className="mt-5 text-xl font-semibold text-text_primary-light dark:text-text_primary-dark">Nenhum exercício encontrado.</p>
-        <p className="mt-1 text-text_secondary-light dark:text-text_secondary-dark">Crie tarefas com exercícios para vê-los aqui.</p>
+        <p className="mt-1 text-text_secondary-light dark:text-text_secondary-dark">Crie tarefas ou subtarefas com exercícios para vê-los aqui.</p>
       </div>
     );
   }
 
   const handleDropdownChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const taskId = event.target.value;
-    setSelectedTaskId(taskId);
-    if (taskId) {
-      setScrollTarget(taskId);
+    const exerciseId = event.target.value;
+    setSelectedExerciseId(exerciseId);
+    if (exerciseId) {
+      setScrollTarget(exerciseId);
     }
   };
 
@@ -84,28 +119,32 @@ const ExerciseViewer: React.FC<ExerciseViewerProps> = ({
         </label>
         <select
           id="exercise-navigator"
-          value={selectedTaskId || ""}
+          value={selectedExerciseId || ""}
           onChange={handleDropdownChange}
           className="w-full max-w-md px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT bg-surface-light dark:bg-surface-dark text-text_primary-light dark:text-text_primary-dark"
         >
           <option value="">-- Selecione um Exercício --</option>
-          {exerciseTasks.map(task => (
-            <option key={task.id} value={task.id}>
-              {task.exercise!.title} (Tarefa: {task.title})
+          {processedExercises.map(displayedEx => (
+            <option key={displayedEx.id} value={displayedEx.id}>
+              {displayedEx.exercise.title} 
+              {displayedEx.originType === 'task' ? ` (Tarefa: ${displayedEx.taskTitle})` : ` (Subtarefa: ${displayedEx.subtaskTitle} de ${displayedEx.taskTitle})`}
             </option>
           ))}
         </select>
       </div>
 
       <div className="space-y-5 sm:space-y-6">
-        {exerciseTasks.map(task => (
+        {processedExercises.map(displayedEx => (
           <FocusedExerciseCard
-            key={task.id}
-            task={task}
-            onUpdateExercise={onUpdateExercise}
-            onEditTask={onEditTask}
-            onRemoveExercise={onRemoveExercise}
-            isSelected={task.id === selectedTaskId}
+            key={displayedEx.id}
+            displayedExercise={displayedEx}
+            onUpdateTaskExercise={onUpdateTaskExercise}
+            onEditTaskRequest={onEditTaskRequest}
+            onRemoveTaskExercise={onRemoveTaskExercise}
+            onUpdateSubtaskExercise={onUpdateSubtaskExercise}
+            onEditSubtaskRequest={onEditSubtaskExerciseRequest}
+            onRemoveSubtaskExercise={onRemoveSubtaskExercise}
+            isSelected={displayedEx.id === selectedExerciseId}
           />
         ))}
       </div>

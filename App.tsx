@@ -9,9 +9,15 @@ import Modal from './components/Modal';
 import ExerciseViewer from './components/ExerciseViewer';
 import YouTubePlayerView from './components/YouTubePlayerView';
 import GlobalPlayerControls from './components/GlobalPlayerControls';
-import TaskFilterControls from './components/TaskFilterControls'; // Import new component
-import { Task, Priority, ExerciseDetails, ViewMode, Theme, TaskFilterOptionId } from './types';
+import TaskFilterControls from './components/TaskFilterControls'; 
+import SubtaskForm from './components/SubtaskForm';
+import { Task, Priority, ExerciseDetails, ViewMode, Theme, TaskFilterOptionId, Subtask, DisplayedExercise } from './types';
 import { useYouTubeIframeApi } from './hooks/useYouTubeIframeApi';
+
+interface EditingSubtaskInfo {
+  taskId: string;
+  subtask: Subtask;
+}
 
 const App: React.FC = () => {
   const [theme, toggleTheme] = useTheme();
@@ -27,14 +33,18 @@ const App: React.FC = () => {
     toggleSubtaskComplete,
     updateExercise,
     removeExerciseFromTask,
+    updateSubtaskExercise, // New hook function
+    removeExerciseFromSubtask, // New hook function
   } = useTasks();
 
   const [currentView, setCurrentView] = useState<ViewMode>('tasks');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
-  const [taskFilter, setTaskFilter] = useState<TaskFilterOptionId>('all'); // State for task filter
+  const [taskFilter, setTaskFilter] = useState<TaskFilterOptionId>('all');
 
-  // YouTube Player Global State
+  const [editingSubtaskInfo, setEditingSubtaskInfo] = useState<EditingSubtaskInfo | null>(null);
+  const [isEditSubtaskModalOpen, setIsEditSubtaskModalOpen] = useState(false);
+
   const { isApiReady: isYouTubeApiReady, error: youtubeApiError } = useYouTubeIframeApi();
   const youtubePlayerRef = useRef<any>(null);
   const youtubePlayerContainerRef = useRef<HTMLDivElement>(null);
@@ -85,7 +95,7 @@ const App: React.FC = () => {
         exerciseForEditTask = {
           title: data.exercise.title,
           statement: data.exercise.statement,
-          isCompleted: taskToEdit.exercise ? taskToEdit.exercise.isCompleted : false, 
+          isCompleted: data.exercise ? (taskToEdit.exercise ? taskToEdit.exercise.isCompleted : false) : false, 
         };
       } else { 
         exerciseForEditTask = taskToEdit.exercise; 
@@ -96,7 +106,7 @@ const App: React.FC = () => {
         description: data.description,
         priority: data.priority,
         exercise: exerciseForEditTask,
-        isCompleted: data.exercise ? (exerciseForEditTask ? exerciseForEditTask.isCompleted : taskToEdit.isCompleted) : taskToEdit.isCompleted
+        isCompleted: taskToEdit.isCompleted 
       });
       handleCloseEditModal();
     }
@@ -106,7 +116,59 @@ const App: React.FC = () => {
     setTaskFilter(newFilter);
   }, []);
 
-  // YouTube Player Logic
+  const handleOpenEditSubtaskModal = useCallback((taskId: string, subtask: Subtask) => {
+    setEditingSubtaskInfo({ taskId, subtask });
+    setIsEditSubtaskModalOpen(true);
+  }, []);
+
+  const handleCloseEditSubtaskModal = useCallback(() => {
+    setIsEditSubtaskModalOpen(false);
+    setEditingSubtaskInfo(null);
+  }, []);
+
+  const handleEditSubtaskSubmit = useCallback((data: { 
+    title: string; 
+    exercise?: { title: string; statement: string } | null 
+  }) => {
+    if (editingSubtaskInfo) {
+      const { taskId, subtask } = editingSubtaskInfo;
+      let exerciseForEdit: ExerciseDetails | null | undefined;
+
+      if (data.exercise === null) { 
+        exerciseForEdit = null;
+      } else if (data.exercise) { 
+        exerciseForEdit = {
+          title: data.exercise.title,
+          statement: data.exercise.statement,
+          isCompleted: data.exercise ? (subtask.exercise ? subtask.exercise.isCompleted : subtask.isCompleted) : subtask.isCompleted,
+        };
+      } else { 
+        exerciseForEdit = subtask.exercise;
+      }
+      
+      editSubtask(taskId, subtask.id, {
+        title: data.title,
+        exercise: exerciseForEdit,
+      });
+      handleCloseEditSubtaskModal();
+    }
+  }, [editingSubtaskInfo, editSubtask, handleCloseEditSubtaskModal]);
+
+  // Handlers for ExerciseViewer (for subtask exercises)
+  const handleEditSubtaskExerciseRequest = useCallback((taskId: string, subtaskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    const subtask = task?.subtasks.find(st => st.id === subtaskId);
+    if (task && subtask) {
+      handleOpenEditSubtaskModal(taskId, subtask);
+    }
+  }, [tasks, handleOpenEditSubtaskModal]);
+
+  const handleUpdateTaskExercise = updateExercise; // Alias for clarity
+  const handleUpdateSubtaskExercise = updateSubtaskExercise;
+  const handleRemoveTaskExercise = removeExerciseFromTask; // Alias for clarity
+  const handleRemoveSubtaskExercise = removeExerciseFromSubtask;
+
+
   useEffect(() => {
     if (youtubeApiError) {
       const messageText = youtubeApiError.message ? youtubeApiError.message : 'Ocorreu um erro ao tentar carregar a API do YouTube.';
@@ -115,119 +177,78 @@ const App: React.FC = () => {
   }, [youtubeApiError]);
 
   const onPlayerReady = useCallback((event: any) => {
-    console.log("onPlayerReady called");
     setIsYoutubeLoading(false);
     setYoutubeVideoTitle(event.target.getVideoData().title || 'Vídeo Carregado');
-    // Volume is now set by a separate useEffect
     if (autoplayNextVideo) {
-      console.log("onPlayerReady: Autoplaying video due to autoplayNextVideo flag");
       event.target.playVideo();
       setAutoplayNextVideo(false); 
     }
-  }, [autoplayNextVideo, setIsYoutubeLoading, setYoutubeVideoTitle, setAutoplayNextVideo]);
+  }, [autoplayNextVideo]);
 
 
   const onPlayerStateChange = useCallback((event: any) => {
     const playerState = event.data;
-    console.log("Player state changed:", playerState, " AutoplayNextVideo:", autoplayNextVideo, "(PLAYING:1, PAUSED:2, ENDED:0, BUFFERING:3, CUED:5, UNSTARTED:-1)");
-    if (playerState === window.YT.PlayerState.PLAYING) {
-      setIsYoutubePlaying(true);
-      setIsYoutubeLoading(false);
-      setYoutubeErrorMessage('');
-    } else if (playerState === window.YT.PlayerState.PAUSED) {
-      setIsYoutubePlaying(false);
-    } else if (playerState === window.YT.PlayerState.ENDED) {
-      setIsYoutubePlaying(false);
-    } else if (playerState === window.YT.PlayerState.BUFFERING) {
-      setIsYoutubeLoading(true);
-    } else if (playerState === window.YT.PlayerState.CUED) {
-        setIsYoutubeLoading(false);
-        if(autoplayNextVideo && youtubePlayerRef.current){
-            console.log("onPlayerStateChange (CUED): Autoplaying video due to autoplayNextVideo flag");
-            youtubePlayerRef.current.playVideo();
-            setAutoplayNextVideo(false); 
-        }
-    } else if (playerState === window.YT.PlayerState.UNSTARTED) {
-        setIsYoutubeLoading(false); 
+    if (playerState === window.YT.PlayerState.PLAYING) setIsYoutubePlaying(true);
+    else setIsYoutubePlaying(false);
+
+    if (playerState === window.YT.PlayerState.BUFFERING) setIsYoutubeLoading(true);
+    else setIsYoutubeLoading(false);
+    
+    if (playerState === window.YT.PlayerState.CUED && autoplayNextVideo && youtubePlayerRef.current) {
+        youtubePlayerRef.current.playVideo();
+        setAutoplayNextVideo(false);
     }
-  }, [autoplayNextVideo, setAutoplayNextVideo, setIsYoutubePlaying, setIsYoutubeLoading, setYoutubeErrorMessage]);
+    if (playerState === window.YT.PlayerState.UNSTARTED || playerState === window.YT.PlayerState.ENDED) {
+        setAutoplayNextVideo(false); // Reset if video ends or is unstarted
+    }
+
+  }, [autoplayNextVideo]);
 
   const onPlayerError = useCallback((event: any) => {
     setIsYoutubeLoading(false);
     setIsYoutubePlaying(false);
     const errorCode = event.data;
-    console.error('YouTube Player Error:', errorCode);
-    if (errorCode === 2) {
-       setYoutubeErrorMessage("Link do vídeo inválido.");
-    } else if (errorCode === 5) {
-        setYoutubeErrorMessage("Erro no player HTML5.");
-    } else if (errorCode === 100) {
-        setYoutubeErrorMessage("Vídeo não encontrado ou privado.");
-    } else if (errorCode === 101 || errorCode === 150) {
-      setYoutubeErrorMessage("Reprodução desativada em players incorporados.");
-    } else {
-      setYoutubeErrorMessage(`Erro no player (código ${errorCode}).`);
-    }
-  }, [setIsYoutubeLoading, setIsYoutubePlaying, setYoutubeErrorMessage]);
+    if (errorCode === 2) setYoutubeErrorMessage("Link do vídeo inválido.");
+    else if (errorCode === 5) setYoutubeErrorMessage("Erro no player HTML5.");
+    else if (errorCode === 100) setYoutubeErrorMessage("Vídeo não encontrado ou privado.");
+    else if (errorCode === 101 || errorCode === 150) setYoutubeErrorMessage("Reprodução desativada em players incorporados.");
+    else setYoutubeErrorMessage(`Erro no player (código ${errorCode}).`);
+  }, []);
   
 
   useEffect(() => {
-    if (!isYouTubeApiReady || !youtubePlayerContainerRef.current) {
-      console.log("YouTube Effect: API not ready or Player Container not available.", { isYouTubeApiReady, containerAvailable: !!youtubePlayerContainerRef.current });
-      return;
-    }
+    if (!isYouTubeApiReady || !youtubePlayerContainerRef.current) return;
 
     if (youtubeVideoId) {
       setIsYoutubeLoading(true); 
       setYoutubeErrorMessage(''); 
 
       if (youtubePlayerRef.current && typeof youtubePlayerRef.current.loadVideoById === 'function') {
-        console.log("Player exists, loading video by ID:", youtubeVideoId);
         youtubePlayerRef.current.loadVideoById({ videoId: youtubeVideoId });
       } else {
         if (youtubePlayerRef.current && typeof youtubePlayerRef.current.destroy === 'function') {
             youtubePlayerRef.current.destroy();
         }
-        console.log("Player does not exist or not ready, creating new for video ID:", youtubeVideoId);
         try {
           youtubePlayerRef.current = new window.YT.Player(youtubePlayerContainerRef.current, {
-            height: '200',
-            width: '200',
-            videoId: youtubeVideoId,
-            playerVars: {
-              autoplay: 0, 
-              controls: 0,
-              modestbranding: 1,
-              fs: 0,
-              rel: 0,
-            },
-            events: {
-              onReady: onPlayerReady,
-              onStateChange: onPlayerStateChange,
-              onError: onPlayerError,
-            },
+            height: '200', width: '200', videoId: youtubeVideoId,
+            playerVars: { autoplay: 0, controls: 0, modestbranding: 1, fs: 0, rel: 0 },
+            events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError },
           });
         } catch (e: any) {
           setIsYoutubeLoading(false);
           setYoutubeErrorMessage(`Falha ao inicializar o player: ${e.message || 'Erro desconhecido'}`);
-          console.error("Error initializing YouTube player:", e);
         }
       }
     } else { 
       if (youtubePlayerRef.current && typeof youtubePlayerRef.current.destroy === 'function') {
-        console.log("No video ID, destroying player.");
         youtubePlayerRef.current.destroy();
         youtubePlayerRef.current = null;
       }
-      setYoutubeVideoTitle('');
-      setIsYoutubePlaying(false);
-      setIsYoutubeLoading(false);
-      setYoutubeErrorMessage('');
-      setAutoplayNextVideo(false);
+      setYoutubeVideoTitle(''); setIsYoutubePlaying(false); setIsYoutubeLoading(false); setYoutubeErrorMessage(''); setAutoplayNextVideo(false);
     }
-  }, [isYouTubeApiReady, youtubeVideoId, onPlayerReady, onPlayerStateChange, onPlayerError, autoplayNextVideo]);
+  }, [isYouTubeApiReady, youtubeVideoId, onPlayerReady, onPlayerStateChange, onPlayerError]);
 
-  // Effect to synchronize volume state with player instance
   useEffect(() => {
     const player = youtubePlayerRef.current;
     if (player && typeof player.setVolume === 'function' && youtubeVideoId) {
@@ -237,47 +258,25 @@ const App: React.FC = () => {
 
 
   const loadYouTubeVideoById = useCallback((id: string) => {
-    console.log("loadYouTubeVideoById called with ID:", id);
     setAutoplayNextVideo(true); 
     setYoutubeVideoId(id); 
-  }, [setAutoplayNextVideo, setYoutubeVideoId]);
+  }, []);
 
 
   const toggleYouTubePlayPause = useCallback(() => {
     const player = youtubePlayerRef.current;
-    if (!player || !youtubeVideoId || typeof player.getPlayerState !== 'function') {
-      console.warn("Toggle play pause: Player not ready or no video ID.", { hasPlayer: !!player, youtubeVideoId });
-      return;
-    }
-    
+    if (!player || !youtubeVideoId || typeof player.getPlayerState !== 'function') return;
     const currentState = player.getPlayerState();
-    console.log("toggleYouTubePlayPause: Current player state:", currentState, "isYoutubeLoading:", isYoutubeLoading);
-    
-    if (currentState === window.YT.PlayerState.BUFFERING && isYoutubeLoading && !youtubeErrorMessage) {
-      console.log("Toggle play pause: Player is BUFFERING, action deferred.");
-      return;
-    }
-    
-    if (currentState === window.YT.PlayerState.PLAYING) {
-      console.log("Player is PLAYING. Calling pauseVideo().");
-      player.pauseVideo();
-    } else { 
-      console.log("Player is NOT PLAYING (state:", currentState, "). Attempting playVideo().");
-      player.playVideo();
-    }
+    if (currentState === window.YT.PlayerState.BUFFERING && isYoutubeLoading && !youtubeErrorMessage) return;
+    if (currentState === window.YT.PlayerState.PLAYING) player.pauseVideo();
+    else player.playVideo();
     setAutoplayNextVideo(false); 
-  }, [youtubeVideoId, isYoutubeLoading, youtubeErrorMessage, setAutoplayNextVideo]);
+  }, [youtubeVideoId, isYoutubeLoading, youtubeErrorMessage]);
 
 
   const changeYouTubeVolume = useCallback((newVolume: number) => {
     setYoutubeVolume(newVolume);
-    // The useEffect for volume sync will handle setting it on the player instance.
-    // However, setting it here directly can make UI feel more responsive if desired.
-    const player = youtubePlayerRef.current;
-    if (player && typeof player.setVolume === 'function' && youtubeVideoId) {
-      player.setVolume(newVolume);
-    }
-  }, [youtubeVideoId]);
+  }, []);
 
 
   const renderCurrentView = () => {
@@ -303,11 +302,11 @@ const App: React.FC = () => {
                 onDelete={deleteTask}
                 onToggleComplete={toggleTaskComplete}
                 onAddSubtask={addSubtask}
-                onEditSubtask={editSubtask}
+                onEditSubtask={handleOpenEditSubtaskModal}
                 onDeleteSubtask={deleteSubtask}
                 onToggleSubtaskComplete={toggleSubtaskComplete}
-                onUpdateExercise={updateExercise}
-                onRemoveExercise={removeExerciseFromTask}
+                onUpdateExercise={updateExercise} // This is for task's direct exercise
+                onRemoveExercise={removeExerciseFromTask} // This is for task's direct exercise
               />
             </div>
           </>
@@ -315,10 +314,13 @@ const App: React.FC = () => {
       case 'exercises':
         return (
           <ExerciseViewer
-            tasks={tasks}
-            onUpdateExercise={updateExercise}
-            onEditTask={handleOpenEditModal}
-            onRemoveExercise={removeExerciseFromTask}
+            tasks={tasks} // Pass all tasks, viewer will extract exercises
+            onEditTaskRequest={handleOpenEditModal}
+            onUpdateTaskExercise={handleUpdateTaskExercise}
+            onRemoveTaskExercise={handleRemoveTaskExercise}
+            onEditSubtaskExerciseRequest={handleEditSubtaskExerciseRequest}
+            onUpdateSubtaskExercise={handleUpdateSubtaskExercise}
+            onRemoveSubtaskExercise={handleRemoveSubtaskExercise}
           />
         );
       case 'youtubePlayer':
@@ -370,6 +372,25 @@ const App: React.FC = () => {
         </Modal>
       )}
 
+      {isEditSubtaskModalOpen && editingSubtaskInfo && (
+        <Modal
+          isOpen={isEditSubtaskModalOpen}
+          onClose={handleCloseEditSubtaskModal}
+          title="Editar Subtarefa"
+        >
+          <SubtaskForm
+            onSubmit={handleEditSubtaskSubmit}
+            initialData={{
+                title: editingSubtaskInfo.subtask.title,
+                exercise: editingSubtaskInfo.subtask.exercise,
+            }}
+            submitButtonText="Salvar Subtarefa"
+            onCancel={handleCloseEditSubtaskModal}
+            formIdPrefix={`edit-subtask-${editingSubtaskInfo.subtask.id}-`}
+          />
+        </Modal>
+      )}
+
       {isYouTubeApiReady && youtubeVideoId && (
         <GlobalPlayerControls
           videoTitle={youtubeVideoTitle}
@@ -384,12 +405,8 @@ const App: React.FC = () => {
       
       <div 
         style={{
-          position: 'absolute',
-          top: '-9999px',
-          left: '-9999px',
-          width: '200px', 
-          height: '200px',
-          overflow: 'hidden', // Ensure it doesn't accidentally show scrollbars
+          position: 'absolute', top: '-9999px', left: '-9999px',
+          width: '200px', height: '200px', overflow: 'hidden',
         }}
       >
         <div ref={youtubePlayerContainerRef} id="app-youtube-player-iframe-container"></div>

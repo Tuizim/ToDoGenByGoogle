@@ -13,13 +13,13 @@ const Button: React.FC<ButtonProps> = ({
   className = '', 
   ...props 
 }) => {
-  const baseStyles = "font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-background-dark transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseStyles = "font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-background-dark transition-all duration-200 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed";
   
   const variantStyles = {
-    primary: 'bg-primary-DEFAULT hover:bg-sky-600 dark:bg-primary-dark dark:hover:bg-sky-500 text-white focus:ring-primary-DEFAULT',
-    secondary: 'bg-secondary-light dark:bg-secondary-dark hover:bg-emerald-600 dark:hover:bg-emerald-500 text-white focus:ring-secondary-dark dark:focus:ring-secondary-light', // Kept secondary, can be adjusted
+    primary: 'bg-teal-500 hover:bg-teal-600 dark:bg-teal-400 dark:hover:bg-teal-500 text-white focus:ring-teal-500',
+    secondary: 'bg-secondary-light dark:bg-secondary-dark hover:bg-emerald-600 dark:hover:bg-emerald-500 text-white focus:ring-secondary-dark dark:focus:ring-secondary-light',
     danger: 'bg-danger-light dark:bg-danger-dark hover:bg-red-600 dark:hover:bg-red-500 text-white focus:ring-danger-dark dark:focus:ring-danger-light',
-    ghost: 'bg-transparent hover:bg-slate-100 dark:hover:bg-slate-700 text-text_primary-light dark:text-text_primary-dark focus:ring-slate-500 dark:focus:ring-slate-400 border border-border_color-light dark:border-border_color-dark',
+    ghost: 'bg-transparent hover:bg-slate-200 dark:hover:bg-slate-700/60 text-text_primary-light dark:text-text_primary-dark focus:ring-teal-500/70 dark:focus:ring-teal-400/70 border border-border_color-light dark:border-border_color-dark',
   };
 
   const sizeStyles = {

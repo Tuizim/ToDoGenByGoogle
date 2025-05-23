@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import Button from './Button';
 
@@ -78,7 +79,7 @@ const YouTubeUrlInput: React.FC<YouTubeUrlInputProps> = ({
                 if (errorMessage) setErrorMessage(''); // Clear error when user types
               }}
               placeholder="https://www.youtube.com/watch?v=..."
-              className="flex-grow w-full px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT bg-background-light dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
+              className="flex-grow w-full px-4 py-2.5 border border-border_color-light dark:border-border_color-dark rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-text_primary-light dark:text-text_primary-dark placeholder-text_secondary-light/70 dark:placeholder-text_secondary-dark/70"
               required
               aria-label="Link do Vídeo do YouTube"
               disabled={!isApiReady}
